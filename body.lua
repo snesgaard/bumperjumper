@@ -43,12 +43,16 @@ function body:warp(dx, dy)
     local bx, by = self.world:getRect(self.token)
     local x, y = bx + dx, by + dy
     self.world:update(self.token, x, y)
-    --resolve_overlap(self.world, self.token)
+    resolve_overlap(self.world, self.token)
     local ax, ay = self.world:getRect(self.token)
-    print(bx, by, ax, ay, x, y)
     local pos = self.__transform.pos
     pos.x = pos.x + ax - bx
     pos.y = pos.y + ay - by
+end
+
+function body:warp_to(x, y)
+    local pos = self.__transform.pos
+    return self:warp(x - pos.x, y - pos.y)
 end
 
 function body:__update(dt)

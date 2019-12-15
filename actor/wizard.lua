@@ -13,4 +13,13 @@ wizard.animations = {
 
 wizard.atlas = 'art/characters'
 
+wizard.name = "wizard"
+
+function wizard.init_state(state, id)
+    return {
+        path="mechanics.base:set_health",
+        args={id=id, health=10, max_health=10}
+    }
+end
+
 return wizard

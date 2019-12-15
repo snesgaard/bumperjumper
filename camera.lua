@@ -14,13 +14,13 @@ function Camera:get_size()
     return gfx.getWidth() / self.scale.x, gfx.getHeight() / self.scale.y
 end
 
-local function get_offset(speed, w)
+local function get_offset(speed, w, bias)
     if speed > 0 then
         return w * 0.2
     elseif speed < 0 then
         return -w * 0.2
     else
-        return 0
+        return bias or 0
     end
 end
 
@@ -38,7 +38,7 @@ function Camera:update(dt, target, level)
     local x = target.__transform.pos.x - w * 0.5
     local y = target.__transform.pos.y - h * 0.5
     local speed = target.speed or vec2()
-    local ox, oy = get_offset(speed.x, w), get_offset(speed.y, h)
+    local ox, oy = get_offset(speed.x, w), get_offset(speed.y, h, -100) * 0 - 50
     local next_pos = vec2(x + ox, y + oy)
     -- next calculate the rate of change
     local d_pos = next_pos - self.position
@@ -48,7 +48,6 @@ function Camera:update(dt, target, level)
         get_max_speed(dt, self.scale.y, d_pos.y)
     )
     max_speed = max_speed * 1.5 * dt
-    print(max_speed, d_pos)
 
     if math.abs(d_pos.x) > max_speed.x then
         d_pos.x = d_pos.x * (max_speed.x / math.abs(d_pos.x))
