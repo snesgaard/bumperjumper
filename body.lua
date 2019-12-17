@@ -45,14 +45,32 @@ function body:warp(dx, dy)
     self.world:update(self.token, x, y)
     resolve_overlap(self.world, self.token)
     local ax, ay = self.world:getRect(self.token)
+    local _, _, col, len = self.world:check(self.token, ax, ay)
+    for i = 1, len do
+        print(col[i].touch.x, col[i].touch.y)
+        print(col[i].normal.x, col[i].normal.y)
+    end
     local pos = self.__transform.pos
     pos.x = pos.x + ax - bx
     pos.y = pos.y + ay - by
 end
 
+function body:can_warp(dx, dy)
+    if not self.body then return false end
+    local bx, by, w, h = self.world:getRect(self.token)
+    local x, y = bx + dx, by + dy
+    local items, len = self.world:queryRect(x, y, w, h)
+    return len == 0
+end
+
 function body:warp_to(x, y)
     local pos = self.__transform.pos
     return self:warp(x - pos.x, y - pos.y)
+end
+
+function body:can_warp_to(x, y)
+    local pos = self.__transform.pos
+    return self:can_warp(x - pos.x, y - pos.y)
 end
 
 function body:__update(dt)
