@@ -70,6 +70,7 @@ function player_control.teleport(body, sprite, dt)
     local offset = body.__transform.scale.x > 0 and 100 or -100
 
     local marker = root:child(require "marker")
+    marker:set_size(body:get_size())
     marker.__transform.pos = pos + vec2(offset, 0)
     local marker_speed = 300
 

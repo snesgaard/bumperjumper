@@ -20,6 +20,10 @@ function body:set(w, h)
     return self
 end
 
+function body:get_size()
+    return self.body.w, self.body.h
+end
+
 local function resolve_overlap(world, body)
     for i = 1, 50 do
         local ax, ay, col, len = world:check(body)
