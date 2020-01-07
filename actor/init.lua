@@ -1,4 +1,4 @@
-local actor = {}
+local actor = {control={}}
 
 local function load_sprite(root, actor_data)
     if not actor_data.animations or not actor_data.atlas then
@@ -18,5 +18,7 @@ function actor.load(path, world)
 
     return root
 end
+
+
 
 return actor

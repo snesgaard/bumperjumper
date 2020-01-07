@@ -83,5 +83,13 @@ function Camera:get_transform()
     return -self.position.x, -self.position.y, self.scale.x, self.scale.y
 end
 
+Camera.control = {}
+
+function Camera.control.idle(camera, body, level)
+    while true do
+        local dt = event:wait("update")
+        camera:update(dt, body, level)
+    end
+end
 
 return Camera

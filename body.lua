@@ -101,6 +101,7 @@ function body:__update(dt)
         local n = vec2(col[i].normal.x, col[i].normal.y)
         if n:dot(vec2(0, -1)) > 0.9 then
             self.speed.y = 0
+            self.ground = love.timer.getTime()
         end
     end
 
