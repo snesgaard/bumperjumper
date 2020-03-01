@@ -37,10 +37,9 @@ end
 local player_control = {}
 
 function player_control.idle(body, sprite)
-    local co = coroutine.create(animation.control.idle)
-    swap_co("player_animation", animation.control.idle, body, sprite)
+    coroutine.set("player_animation", animation.control.idle, body, sprite)
 
-    swap_co("camera_control", camera_control.idle, camera, body, level)
+    coroutine.set("camera_control", camera_control.idle, camera, body, level)
     while true do
         local dt = event:wait("update")
         if love.keyboard.isDown("lctrl") then
@@ -63,7 +62,7 @@ function player_control.idle(body, sprite)
 end
 
 function player_control.teleport(body, sprite, dt)
-    swap_co("player_animation")
+    coroutine.set("player_animation")
     sprite:queue("chant")
     body.speed.x = 0
     local pos = body.__transform.pos
@@ -74,7 +73,12 @@ function player_control.teleport(body, sprite, dt)
     marker.__transform.pos = pos + vec2(offset, 0)
     local marker_speed = 300
 
-    swap_co("camera_control", camera_control.idle, camera, marker, level)
+    coroutine.set("camera_control", camera_control.idle, camera, marker, level)
+
+    log.debug("Inter telepor %s", tostring(coroutine.running()))
+    coroutine.on_cleanup(function()
+        marker:destroy()
+    end)
 
     while love.keyboard.isDown("lctrl") or not body:can_warp_to(marker.__transform.pos:unpack()) do
         event:wait("update")
@@ -99,7 +103,8 @@ function player_control.teleport(body, sprite, dt)
     end
 
     body:warp_to(marker.__transform.pos:unpack())
-    marker:destroy()
+    coroutine.cleanup()
+
     return player_control.idle(body, sprite)
 end
 
@@ -125,7 +130,7 @@ function love.load()
 
     camera = Camera:create()
 
-    swap_co("player_control", player_control.idle, body, sprite)
+    coroutine.set("player_control", player_control.idle, body, sprite)
 
     ui = Node.create(require "ui.char_bar")
     mechanics.remap(ui)
@@ -134,6 +139,7 @@ function love.load()
     play_state, id = mechanics.init_actor(play_state, wizard)
 
     ui:set_id(id):update(play_state)
+    log.debug("Ready")
 end
 
 function love.update(dt)

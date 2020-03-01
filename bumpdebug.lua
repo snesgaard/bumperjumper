@@ -4,6 +4,17 @@ local function getCellRect(world, cx,cy)
   return l,t,cellSize,cellSize
 end
 
+local function get_color(key)
+    if type(key) ~= "table" or not key.type then
+        return 0, 1, 0
+    end
+    if key.type == "body" then
+        return 0, 0, 1
+    else
+        return 1, 0, 0
+    end
+end
+
 function draw_world(world)
     local cellSize = world.cellSize
     local font = love.graphics.getFont()
@@ -22,9 +33,12 @@ function draw_world(world)
         end
     end
 
-    for _, rects in pairs(world.rects) do
-        gfx.setColor(0, 1, 0)
+    for key, rects in pairs(world.rects) do
+        local r, g, b = get_color(key)
+        gfx.setColor(r, g, b)
         gfx.rectangle("line", rects.x, rects.y, rects.w, rects.h)
+        gfx.setColor(r, g, b, 0.3)
+        gfx.rectangle("fill", rects.x, rects.y, rects.w, rects.h)
     end
     gfx.setColor(1, 1, 1)
 end

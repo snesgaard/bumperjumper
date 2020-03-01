@@ -1,5 +1,6 @@
 --require "lovedebug"
 require "nodeworks"
+require "update_coroutine"
 
 function love.load(arg)
     log.outfile = "./log.txt"
@@ -15,7 +16,10 @@ function love.load(arg)
 
     local entrymap = {
         node = "designer/node",
-        platform = "platform_main"
+        platform = "platform_main",
+        glow = "glow_main",
+        debug = "debug_main",
+        sprite = "sprite_main"
     }
     entry = entrymap[entry]
     if entry then

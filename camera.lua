@@ -4,8 +4,8 @@ Camera.__index = Camera
 function Camera:create()
     local this = {
         position = vec2(0, 0),
-        scale = vec2(3, 3),
-        max_speed = 200,
+        scale = vec2(2, 2),
+        max_speed = 400,
     }
     return setmetatable(this, Camera)
 end
@@ -16,9 +16,9 @@ end
 
 local function get_offset(speed, w, bias)
     if speed > 0 then
-        return w * 0.2
+        return w * 0.1
     elseif speed < 0 then
-        return -w * 0.2
+        return -w * 0.1
     else
         return bias or 0
     end
@@ -35,9 +35,9 @@ function Camera:update(dt, target, level)
     local w, h = self:get_size()
     local level_w = level.tilewidth * level.width
     local level_h = level.tileheight * level.height
-    local x = target.__transform.pos.x - w * 0.5
-    local y = target.__transform.pos.y - h * 0.5
-    local speed = target.speed or vec2()
+    local x = target.transform.position.x - w * 0.5
+    local y = target.transform.position.y - h * 0.5
+    local speed = target.velocity or vec2()
     local ox, oy = get_offset(speed.x, w), get_offset(speed.y, h, -100) * 0 - 50
     local next_pos = vec2(x + ox, y + oy)
     -- next calculate the rate of change
