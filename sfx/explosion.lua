@@ -1,13 +1,27 @@
 local sfx = {}
 
-sfx.flash_image = gfx.prerender(150, 150, function(w, h)
+sfx.flash_image = gfx.prerender(200, 200, function(w, h)
     gfx.setColor(1, 1, 1)
     gfx.ellipse("fill", w * 0.5, h * 0.5, w * 0.5, h * 0.5)
 end)
 
-sfx.circle_image = gfx.prerender(26, 26, function(w, h)
+sfx.blur = moon(moon.effects.gaussianblur)
+sfx.blur.gaussianblur.sigma = 6.0
+
+sfx.fire_circle_image = gfx.prerender(52, 52, function(w, h)
     gfx.setColor(1, 1, 1)
-    gfx.ellipse("fill", w * 0.5, h * 0.5, w * 0.5, h * 0.5)
+    sfx.blur(function()
+        gfx.ellipse("fill", w * 0.5, h * 0.5, w * 0.25, h * 0.25)
+    end)
+end)
+
+sfx.blur.gaussianblur.sigma = 3.0
+
+sfx.smoke_circle_image = gfx.prerender(52, 52, function(w, h)
+    gfx.setColor(1, 1, 1)
+    sfx.blur(function()
+        gfx.ellipse("fill", w * 0.5, h * 0.5, w * 0.25, h * 0.25)
+    end)
 end)
 
 sfx.spark_image = gfx.prerender(20, 6, function(w, h)
@@ -22,11 +36,11 @@ function sfx:create()
     }
 
     self.particles = {
-        particles{
-            image=sfx.circle_image,
-            buffer=40,
+        fire=particles{
+            image=sfx.fire_circle_image,
+            buffer=60,
             rate=0,
-            emit=40,
+            emit=60,
             lifetime={0.35, 0.75},
             color=List.concat(
                 gfx.hex2color("ffd541af"),
@@ -35,13 +49,13 @@ function sfx:create()
                 gfx.hex2color("df3e2300")
             ),
             size={1, 2},
-            speed={300, 600},
+            speed={100, 1000},
             acceleration={0, -600},
-            damp=5,
+            damp=20,
             area={"ellipse", 20, 20, 0, true}
         },
-        particles{
-            image=sfx.circle_image,
+        smoke=particles{
+            image=sfx.smoke_circle_image,
             buffer=40,
             rate=0,
             emit=40,
@@ -50,7 +64,7 @@ function sfx:create()
                 gfx.hex2color("6f3e23cf"),
                 gfx.hex2color("6d758d00")
             ),
-            size={0.5, 1},
+            size={1, 3},
             speed={50, 600},
             acceleration={0, -600},
             damp=5,
@@ -67,7 +81,7 @@ function sfx:life()
     event:wait(t, "finish")
 
     local function is_done()
-        for _, p in ipairs(self.particles) do
+        for _, p in pairs(self.particles) do
             if p:getCount() > 0 then return false end
         end
         return true
@@ -83,17 +97,19 @@ function sfx:life()
 end
 
 function sfx:update(dt)
-    for _, p in ipairs(self.particles) do p:update(dt) end
+    for _, p in pairs(self.particles) do p:update(dt) end
 end
 
 function sfx:draw()
     gfx.setColor(self.flash_circle.color)
     local im = self.flash_circle.image
     gfx.draw(im, -im:getWidth() * 0.5, -im:getHeight() * 0.5)
-    gfx.setColor(1, 1, 1)
-    for _, p in ipairs(self.particles) do
-        gfx.draw(p, 0, 0)
-    end
+    gfx.setColor(1, 1, 1, 0.5)
+    gfx.setBlendMode("add")
+    gfx.draw(self.particles.smoke, 0, 0)
+    gfx.setColor(0.5, 0.5, 0.5, 0.5)
+    gfx.draw(self.particles.fire, 0, 0)
+    gfx.setBlendMode("alpha")
 end
 
 

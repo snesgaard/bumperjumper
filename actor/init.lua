@@ -17,6 +17,23 @@ local function motion_controls(body, key)
     body.velocity.x = 200 * speed
 end
 
+local function jump(body)
+    body.velocity.y = body.jump_speed or 0
+end
+
+local function to_int(bool)
+    return bool and 1 or 0
+end
+
+local function set_orientation(body)
+    local s = 0
+    s = s + to_int(love.keyboard.isDown("right"))
+    s = s - to_int(love.keyboard.isDown("left"))
+    if s ~= 0 then
+        body.transform.scale.x = s
+    end
+end
+
 local actor = {}
 
 function actor.idle_animation(scene_graph, id)
@@ -40,6 +57,8 @@ function actor.cast(scene_graph, id)
     local body = scene_graph:get_body(id)
     local sprite = scene_graph:get_sprite(id)
 
+    set_orientation(body)
+
     local press_token = event:listen("keypressed", function(key)
         if key == "left" then
             body.transform.scale.x = -1
@@ -53,18 +72,18 @@ function actor.cast(scene_graph, id)
     end)
 
     coroutine.on_cleanup(function()
-        event:clear(token)
+        event:clear(press_token)
         event:clear(ground_token)
     end)
 
-    sprite:play("chant")
+    sprite:queue("idle2chant", "chant")
     while love.keyboard.isDown("a") do
         event:wait("update")
     end
 
-    event:clear(token)
+    event:clear(press_token)
 
-    sprite:play("cast")
+    sprite:queue("chant2cast", "cast")
 
     local token = event:once(sprite, "slice/cast/global", function(slice)
         local center = slice:center()
@@ -73,8 +92,45 @@ function actor.cast(scene_graph, id)
         root:child(id, require "fireball", center, body.transform.scale.x)
     end)
 
+    event:wait(sprite, "finish")
+
     event:sleep(0.1)
+
+    coroutine.set(animation_id(id), function()
+        event:sleep(0.3)
+        sprite:queue("cast2idle", "idle")
+    end)
+
     coroutine.cleanup()
+
+    local token = {}
+    local press_token = event:listen("keypressed", function(key)
+        if key == "space" then
+            event(token, "do_exit", true)
+            return true
+        end
+    end)
+    local finish_token = event:listen(sprite, "finish", function(name)
+        if name == "cast2idle" then
+            event(token, "do_exit")
+            return true
+        end
+    end)
+    local ground_token = event:listen(body, "ground", function()
+        body.velocity.x = 0
+    end)
+
+    coroutine.on_cleanup(function()
+        event:clear(press_token)
+        event:clear(finish_token)
+        event:clear(ground_token)
+    end)
+
+    local should_jump = event:wait(token, "do_exit")
+    if should_jump then jump(body) end
+
+    coroutine.cleanup()
+
     return actor.control(scene_graph, id)
 end
 
@@ -98,7 +154,7 @@ function actor.control(scene_graph, id)
             if love.keyboard.isDown("down") then
                 body:relative_move(0, 1, true)
             else
-                body.velocity.y = body.jump_speed or 0
+                jump(body)
             end
         elseif key == "a" then
             coroutine.cleanup()
