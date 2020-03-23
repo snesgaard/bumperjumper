@@ -1,3 +1,7 @@
+update = require "update"
+render = require "render"
+require "bumpdebug"
+
 function reload(p)
     package.loaded[p] = nil
     return require(p)
@@ -5,24 +9,49 @@ end
 
 function love.load(arg)
     nodes = Node.create()
+    nodes.world = bump.newWorld(64)
     --gfx.setBackgroundColor(0.2, 0.3, 0.4, 1)
     gfx.setBackgroundColor(0, 0, 0, 0)
 
+    event = EventServer()
+
     settings = {origin = false}
 
-    local function creation(path)
-        local p = path:gsub('.lua', '')
-        local t = reload(p)
-        local n = nodes:child(t)
-        nodes[p] = n
-        return n
+    local function init_node(nodes, Type)
+        local args = Type.testargs
+        if type(args) == "function" then
+            return nodes:child(Type, args())
+        elseif type(args) == "table" then
+            return nodes:child(Type, unpack(args))
+        else
+            return nodes:child(Type, args)
+        end
     end
 
-    for _, path in ipairs(arg) do
-        local n = creation(path)
-        if n.test then
-            n:fork(n.test, settings)
+    local function creation(path_base)
+        local component = path_base:split(':')
+        local path = component:head()
+        local keys = component:body()
+        local p = path:gsub('.lua', '')
+        local t = reload(p)
+
+        if #keys == 0 then
+            local n = init_node(nodes, t)
+            if n.test then
+                n:fork(n.test, settings)
+            end
+        else
+            for _, key in ipairs(keys) do
+                local n = init_node(nodes, t[key])
+                if n.test then
+                    n:fork(n.test, settings)
+                end
+            end
         end
+    end
+
+    for _, p in ipairs(arg) do
+        creation(p)
     end
 
     function reload_scene()
@@ -70,14 +99,28 @@ function love.update(dt)
         end
     end
 
-   --dress:Input(input, dress.layout:row())
-   tween.update(dt)
-   nodes:update(dt)
-   lurker:update(dt)
-   event:update(dt)
-   event:spin()
+    if not settings.paused then
+        nodes:traverse(update, {dt = dt})
+        tween.update(dt)
+        lurker:update(dt)
+        event:update(dt)
+    end
+    event:spin()
 end
 
+local glow_blur = moon(moon.effects.gaussianblur)
+glow_blur.gaussianblur.sigma = 12.0
+
+local function render_scene(nodes)
+    nodes:traverse(render, {draw_frame=false})
+    if not settings.disable_glow then
+        gfx.setBlendMode("add")
+        glow_blur(function()
+            nodes:traverse(render, {draw_frame=false, func="glow"})
+        end)
+        gfx.setBlendMode("alpha")
+    end
+end
 
 
 function love.draw()
@@ -88,13 +131,28 @@ function love.draw()
     gfx.setColor(1, 1, 1)
     gfx.setLineWidth(1)
     gfx.line(0, h / 2, w, h / 2)
+    for x = w / 2, w, 100 do
+        gfx.line(x, h / 2 - 10, x, h / 2 + 10)
+    end
+    for x = w / 2, 0, -100 do
+        gfx.line(x, h / 2 - 10, x, h / 2 + 10)
+    end
     gfx.line(w / 2, 0, w / 2, h)
-    nodes.__transform.scale = vec2(2, 2)
+    for y = h / 2, h, 100 do
+        gfx.line(w / 2 - 10, y, w / 2 + 10, y)
+    end
+    for y = h / 2, 0, -100 do
+        gfx.line(w / 2 - 10, y, w / 2 + 10, y)
+    end
     if not settings.origin then
-        nodes:draw(w / 2, h / 2)
+        nodes.transform = transform(w / 2, h / 2, 0, 2, 2)
+        render_scene(nodes)
     else
-        nodes:draw(0, 0)
+        nodes.transform = transform(0, 0, 0, 2, 2)
+        render_scene(nodes)
     end
     gfx.setColor(1, 1, 1)
     dress:draw()
+
+    draw_world(nodes.world)
 end

@@ -2,6 +2,7 @@ local render = {}
 
 local stack_op = {
     color = gfx.setColor,
+    blend = gfx.setBlendMode,
     transform = function(t)
         if t.position then
             gfx.translate(t.position.x, t.position.y)
@@ -41,6 +42,22 @@ function render.visit(node, args)
         gfx.setColor(1.0, 0.3, 0.2)
         gfx.line(-5, 0, 20, 0)
         gfx.pop("all")
+    end
+end
+
+render.glow_blur = moon(moon.effects.gaussianblur)
+render.glow_blur.gaussianblur.sigma = 12.0
+
+function render.fullpass(scenegraph, settings)
+    settings = settings or {}
+
+    scenegraph:traverse(render, {draw_frame=false})
+    if not settings.disable_glow then
+        gfx.setBlendMode("add")
+        render.glow_blur(function()
+            scenegraph:traverse(render, {draw_frame=false, func="glow"})
+        end)
+        gfx.setBlendMode("alpha")
     end
 end
 

@@ -8,11 +8,11 @@ end)
 sfx.blur = moon(moon.effects.gaussianblur)
 sfx.blur.gaussianblur.sigma = 6.0
 
-sfx.fire_circle_image = gfx.prerender(52, 52, function(w, h)
+sfx.fire_circle_image = gfx.prerender(26, 26, function(w, h)
     gfx.setColor(1, 1, 1)
-    sfx.blur(function()
+    --sfx.blur(function()
         gfx.ellipse("fill", w * 0.5, h * 0.5, w * 0.25, h * 0.25)
-    end)
+    --end)
 end)
 
 sfx.blur.gaussianblur.sigma = 3.0
@@ -107,11 +107,15 @@ function sfx:draw()
     gfx.setColor(1, 1, 1, 0.5)
     gfx.setBlendMode("add")
     gfx.draw(self.particles.smoke, 0, 0)
-    gfx.setColor(0.5, 0.5, 0.5, 0.5)
-    gfx.draw(self.particles.fire, 0, 0)
     gfx.setBlendMode("alpha")
+    gfx.setColor(1, 1, 1, 0.2)
+    gfx.draw(self.particles.fire, 0, 0)
 end
 
+function sfx:glow()
+    gfx.setColor(1, 1, 1)
+    gfx.draw(self.particles.fire, 0, 0)
+end
 
 
 

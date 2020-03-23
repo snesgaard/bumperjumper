@@ -2,9 +2,6 @@ local function resolve_collision(col)
     if col.item.on_collision then
         col.item.on_collision(col)
     end
-    if col.other.on_collision then
-        col.other.on_collision(col)
-    end
 end
 
 local function move_filter(item, other)
@@ -42,7 +39,8 @@ function hitbox:update(dt, args)
 
     local transforms = args.transforms
     local shape = self.shape
-    for _, t in ipairs(transforms) do
+    for i = #transforms, 1, -1 do
+        local t = transforms[i]
         shape = t:forward(shape)
     end
     if not self.world:hasItem(self) then

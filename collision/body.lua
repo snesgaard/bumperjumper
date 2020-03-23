@@ -46,7 +46,7 @@ function body:create(world, x, y, w, h)
 end
 
 function body:set_gravity(gravity)
-    self.gravity = gravity or body.default_gravity
+    self.gravity = gravity or self.default_gravity
 end
 
 function body:is_valid()

@@ -159,6 +159,16 @@ function actor.control(scene_graph, id)
         elseif key == "a" then
             coroutine.cleanup()
             return actor.cast(scene_graph, id)
+        elseif key == "d" then
+            local blast = require "spell.blast"
+            coroutine.cleanup()
+            blast.control(scene_graph, id, "d")
+            return actor.control(scene_graph, id)
+        elseif key == "lshift" then
+            local teleport = require "spell.teleport"
+            coroutine.cleanup()
+            teleport.teleport(scene_graph, id)
+            return actor.control(scene_graph, id)
         end
     end
 end
