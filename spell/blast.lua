@@ -92,9 +92,13 @@ local function control(scene_graph, id, action_key)
         event:clear(token)
     end)
 
-    event:wait(sprite, "finish")
+    while event:wait(sprite, "finish") ~= "chant2cast" do end
 
     event:sleep(0.2)
+
+    sprite:queue("cast2idle", "idle")
+
+    while event:wait(sprite, "finish") ~= "cast2idle" do end
 
     coroutine.cleanup()
 end
