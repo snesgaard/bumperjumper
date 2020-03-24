@@ -136,6 +136,7 @@ end
 local function teleport(scene_graph, id)
     local body = scene_graph:get_body(id)
     local sprite = scene_graph:get_sprite(id)
+    local spell = require "spell"
 
     if not body then
         errorf("Could not find body for %s", id)
@@ -189,6 +190,8 @@ local function teleport(scene_graph, id)
     --sprite.color = color(0, 0, 0, 0)
 
     coroutine.cleanup()
+
+    return spell.idle.control(scene_graph, id)
 end
 
 return {

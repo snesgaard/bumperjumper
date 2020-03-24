@@ -5,9 +5,9 @@ level_io = require "level"
 collision = require "collision"
 Camera = require "camera"
 actor = require "actor"
+spell = require "spell"
 require "update_coroutine"
 require "bumpdebug"
-local teleport = require "spell.teleport"
 
 context = {}
 
@@ -52,14 +52,13 @@ function love.load()
     collision.init(world)
     scene_graph = Node.create(require "scene_graph")
     scene_graph.world = world
-    print(dict(world))
     scene_graph.level = level
     scene_graph:init_actor(wizard_id, init_wizard, world)
     scene_graph:init_actor("box", require "actor.box", world, spatial(0, 0, 24, 90))
 
     scene_graph:get_body("box").transform.position = vec2(600, 100)
 
-    coroutine.set("player_control", actor.control, scene_graph, wizard_id)
+    coroutine.set("player_control", spell.idle.control, scene_graph, wizard_id)
     camera = Camera.create()
 end
 

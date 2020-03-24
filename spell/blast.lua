@@ -25,7 +25,11 @@ end
 local function control(scene_graph, id, action_key)
     local body = scene_graph:get_body(id)
     local sprite = scene_graph:get_sprite(id)
-    local context = {time=settings.charge_time, level=1}
+    local spell = require "spell"
+
+    local context = {
+        time=settings.charge_time, level=1, tokens={}
+    }
 
     if not body then
         errorf("Could not find body for %s", id)
@@ -90,6 +94,10 @@ local function control(scene_graph, id, action_key)
 
     coroutine.on_cleanup(function()
         event:clear(token)
+
+        for _, token in pairs(context.tokens) do
+            event:clear(token)
+        end
     end)
 
     while event:wait(sprite, "finish") ~= "chant2cast" do end
@@ -98,9 +106,23 @@ local function control(scene_graph, id, action_key)
 
     sprite:queue("cast2idle", "idle")
 
-    while event:wait(sprite, "finish") ~= "cast2idle" do end
+    local next_token = {}
+
+    context.tokens.animation = event:listen(sprite, "finish", function(key)
+        if key == "cast2idle" then
+            event(next_token, "next", spell.idle.control)
+            return true
+        end
+    end)
+    context.tokens.interrupt = event:listen("keypressed", function(key)
+        return spell.idle.interrupt(next_token, "next", body, key)
+    end)
+
+    local next_action = event:wait(next_token, "next")
 
     coroutine.cleanup()
+
+    return next_action(scene_graph, id)
 end
 
 return {
