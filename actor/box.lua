@@ -29,13 +29,20 @@ local function ai_knockback(boxbody, dir)
     coroutine.cleanup()
 end
 
-return function(world, shape)
-    local boxbody = Node.create(collision.Body, world, shape:unpack())
-    boxbody:child("sprite", sprite, shape)
-    local hurtbox = boxbody:child("hurtbox", collision.Hitbox, shape:unpack())
-    hurtbox.faction = "enemy"
-    function hurtbox:knockback(dir)
-        coroutine.set("box", ai_knockback, boxbody, dir)
-    end
-    return boxbody
-end
+return {
+    scene = function(world, shape)
+        local boxbody = Node.create(collision.Body, world, shape:unpack())
+        boxbody:child("sprite", sprite, shape)
+        local hurtbox = boxbody:child("hurtbox", collision.Hitbox, shape:unpack())
+        hurtbox.faction = "enemy"
+        function hurtbox:knockback(dir)
+            coroutine.set("box", ai_knockback, boxbody, dir)
+        end
+        return boxbody
+    end,
+    stats = {
+        damage = {
+            health = 800
+        }
+    }
+}

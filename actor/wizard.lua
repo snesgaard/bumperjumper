@@ -16,4 +16,10 @@ wizard.atlas = 'art/characters'
 
 wizard.name = "wizard"
 
+wizard.stats = {
+    damage = {
+        health = 20
+    }
+}
+
 return wizard

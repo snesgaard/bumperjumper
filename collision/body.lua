@@ -148,6 +148,10 @@ function body:reshape(...)
     self.shape = spatial(...)
 end
 
+function body:get_shape()
+    return spatial(self.world:getRect(self))
+end
+
 function body:move(x, y, is_relative, ignore_oneway)
     if is_relative then
         self.transform.position = self.transform.position + vec2(x, y)

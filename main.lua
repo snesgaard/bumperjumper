@@ -19,7 +19,8 @@ function love.load(arg)
         platform = "platform_main",
         glow = "glow_main",
         debug = "debug_main",
-        sprite = "sprite_main"
+        sprite = "sprite_main",
+        state = "state_main"
     }
     entry = entrymap[entry]
     if entry then

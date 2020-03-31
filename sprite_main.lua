@@ -6,12 +6,16 @@ collision = require "collision"
 Camera = require "camera"
 actor = require "actor"
 spell = require "spell"
+mechanics = require "mechanics"
 require "update_coroutine"
 require "bumpdebug"
 
 context = {}
 
-local function init_wizard(world)
+local wizard_id = "wizard"
+local box_id = "box"
+
+local function init_wizard(world, manager)
     body = Node.create(require "collision.body", world)
 
     local sprite = body:child(
@@ -35,10 +39,15 @@ local function init_wizard(world)
 
     sprite.on_slice_update = curry(collision.sprite_hitbox_sync, body)
 
+    local stats = {
+        damage = {
+            health = 15
+        }
+    }
+
     return body
 end
 
-local wizard_id = "wizard"
 
 function love.load()
     local t = dict{5, 3, 1, foo=3, bar=5}
@@ -53,10 +62,22 @@ function love.load()
     scene_graph = Node.create(require "scene_graph")
     scene_graph.world = world
     scene_graph.level = level
-    scene_graph:init_actor(wizard_id, init_wizard, world)
-    scene_graph:init_actor("box", require "actor.box", world, spatial(0, 0, 24, 90))
+    scene_graph.manager = mechanics.manager.create()
 
-    scene_graph:get_body("box").transform.position = vec2(600, 100)
+    scene_graph:init_actor(wizard_id, init_wizard, world)
+    scene_graph:init_actor(box_id, actor.box.scene, world, spatial(0, 0, 24, 90))
+
+    scene_graph.manager:setup(wizard_id, actor.wizard.stats)
+    scene_graph.manager:setup(box_id, actor.box.stats)
+
+
+    scene_graph:get_body(box_id).transform.position = vec2(600, 100)
+
+
+    scene_graph:screen_ui(require "ui.health_bar", wizard_id).transform = transform(20, 20)
+    scene_graph:world_ui(require "ui.number_server")
+
+    scene_graph.manager:damage(wizard_id, wizard_id, 5)
 
     coroutine.set("player_control", spell.idle.control, scene_graph, wizard_id)
     camera = Camera.create()
@@ -82,6 +103,8 @@ function love.draw()
     --gfx.translate(x, y)
     camera:transform()
     --scene_graph:traverse(render, {draw_frame=false})
-    render.fullpass(scene_graph)
+    render.fullpass(scene_graph:find("world"))
+    gfx.origin()
+    render.fullpass(scene_graph:find("screen_ui"))
     --draw_world(world)
 end

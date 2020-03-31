@@ -5,6 +5,8 @@ local function resolve_collision(col)
 end
 
 local function move_filter(item, other)
+    -- Ignore terrain
+    if not other.type then return end
     return "cross"
 end
 

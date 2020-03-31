@@ -6,16 +6,45 @@ local blast = {}
 
 blast.hitbox = spatial(0, 0, 80, 80):relative(nil, "center")
 
-function blast:create(position)
+function blast:create(position, master, level)
     self.transform = transform(position.x, position.y)
+    self.id = master
+    self.level = level
 end
 
 function blast:on_adopted()
     self:fork(self.life)
 end
 
+function blast.damage(level)
+    if level <= 1 then
+        return 5
+    elseif level == 2 then
+        return 10
+    elseif level >= 3 then
+        return 20
+    end
+end
+
 function blast:life(world)
     local hitbox = self:child("hitbox", require "collision.hitbox", blast.hitbox:unpack())
+
+    local cache = {}
+    function hitbox.on_collision(col)
+        if cache[col.other] then return end
+        cache[col.other] = true
+
+        local master_id = col.item:upsearch("id")
+        local other_id = col.other:upsearch("id")
+
+        if cache[other_id] or master_id == other_id then return end
+
+        cache[other_id] = true
+        local manager = col.item:upsearch("manager")
+        local level = col.item:upsearch("level") or 1
+        manager:damage(master_id, other_id, blast.damage(level))
+    end
+
     self:child("sfx", require "sfx.explosion")
     event:sleep(0.1)
     hitbox:destroy()
@@ -84,7 +113,7 @@ local function control(scene_graph, id, action_key)
         local xself = sx > 0 and "left" or "right"
         local xother = sx > 0 and "right" or "left"
         local center = blast.hitbox:align(slice, xself, xother, "center", "center"):center()
-        local effect = scene_graph:child(blast, center)
+        local effect = scene_graph:sfx(blast, center, id, context.level)
         if context.level == 1 then
             effect.transform.scale = vec2(0.3, 0.3)
         elseif context.level == 2 then

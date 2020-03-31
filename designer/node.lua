@@ -15,7 +15,7 @@ function love.load(arg)
 
     event = EventServer()
 
-    settings = {origin = false}
+    settings = {origin = false, scale=2}
 
     local function init_node(nodes, Type)
         local args = Type.testargs
@@ -145,10 +145,10 @@ function love.draw()
         gfx.line(w / 2 - 10, y, w / 2 + 10, y)
     end
     if not settings.origin then
-        nodes.transform = transform(w / 2, h / 2, 0, 2, 2)
+        nodes.transform = transform(w / 2, h / 2, 0, settings.scale, settings.scale)
         render_scene(nodes)
     else
-        nodes.transform = transform(0, 0, 0, 2, 2)
+        nodes.transform = transform(0, 0, 0, settings.scale, setting.scale)
         render_scene(nodes)
     end
     gfx.setColor(1, 1, 1)

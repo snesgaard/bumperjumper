@@ -182,8 +182,9 @@ local function teleport(scene_graph, id)
 
     local zap_sfx = require "sfx.teleport.zap"
     local src_sfx = require "sfx.teleport.src"
-    scene_graph:child(zap_sfx, shape:center(), destination:center())
-    scene_graph:child(src_sfx, shape, motion)
+
+    scene_graph:sfx(zap_sfx, shape:center(), destination:center())
+    scene_graph:sfx(src_sfx, shape, motion)
 
     local t = tween(0.3, sprite.color, color(1, 1, 3, 1))
     event:wait(t, "finish")
