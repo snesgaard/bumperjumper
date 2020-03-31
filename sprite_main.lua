@@ -1,3 +1,4 @@
+require "ui/update_sprite"
 mechanics = require "mechanics"
 update = require "update"
 render = require "render"
