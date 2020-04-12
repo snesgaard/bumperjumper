@@ -20,7 +20,8 @@ function love.load(arg)
         glow = "glow_main",
         debug = "debug_main",
         sprite = "sprite_main",
-        state = "state_main"
+        state = "state_main",
+        atlas = "atlas_main"
     }
     entry = entrymap[entry]
     if entry then
