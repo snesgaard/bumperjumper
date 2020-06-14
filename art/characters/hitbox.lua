@@ -1,3 +1,8 @@
 return {
-    wizard_spell = {chant={from=7, to=9}, cast={from=12, to=12}}
+    ["wizard_spell/chant"] = {
+        interpolate = function(name, index) return name == "chant"
+    end},
+    ["wizard_spell/cast"] = {
+        interpolate = function(name, index) return name == "cast"
+    end}
 }
